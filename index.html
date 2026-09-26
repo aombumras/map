@@ -2,43 +2,38 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Realistic Sci-Fi 3D Campus Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco-SciFi 3D Campus Map</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #0d1117; } /* พื้นหลังเข้มแบบอวกาศ/กลางคืน */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', 'Segoe UI', Tahoma, sans-serif; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f4f7f9; /* พื้นหลังสีขาวสว่าง */ }
         
         #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         
-        /* ป้ายชื่อตึกแนว Sci-Fi Hologram โปร่งใส */
+        /* ป้ายชื่อตึกแนว Sci-Fi แบบพื้นเข้ม (เพื่อให้ตัดกับฉากหลังสีขาว) */
         .building-label {
-            background: rgba(0, 20, 40, 0.5); /* โปร่งใส */
-            color: #00ffff; /* ตัวหนังสือสีฟ้าเรืองแสง */
+            background: rgba(15, 23, 42, 0.75); /* กระจกควันบุหรี่โปร่งแสง */
+            color: #00ffff; /* ตัวหนังสือสีฟ้าไซไฟ */
             padding: 8px 16px;
-            border: 1px solid rgba(0, 255, 255, 0.5);
-            border-radius: 4px;
-            font-size: 13px;
+            border: 1px solid #00ffff;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2);
-            pointer-events: auto;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.2);
+            pointer-events: auto; /* ให้กดที่ป้ายได้ */
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
             white-space: nowrap;
-            backdrop-filter: blur(5px); /* เอฟเฟกต์กระจกฝ้า */
-            background-image: linear-gradient(0deg, transparent 50%, rgba(0, 255, 255, 0.05) 50%);
-            background-size: 100% 4px; /* เส้นสแกนแบบโฮโลแกรม */
+            backdrop-filter: blur(6px);
         }
-        .building-label::before {
-            content: ''; position: absolute; bottom: -15px; left: 50%; width: 1px; height: 15px;
-            background: rgba(0, 255, 255, 0.5); transform: translateX(-50%);
+        .building-label::after {
+            content: ''; position: absolute; bottom: -8px; left: 50%; width: 2px; height: 8px;
+            background: #00ffff; transform: translateX(-50%);
+            box-shadow: 0 0 5px #00ffff;
         }
-        .building-label:hover {
-            background: rgba(0, 50, 80, 0.7); box-shadow: 0 0 25px rgba(0, 255, 255, 0.6); transform: scale(1.1);
-        }
+        .building-label:active { transform: scale(0.95); background: rgba(0, 255, 255, 0.2); }
 
         /* UI คอนโทรล */
         .ui-overlay {
@@ -48,33 +43,36 @@
         }
 
         .header-panel {
-            background: rgba(10, 15, 25, 0.7); border: 1px solid #00ffff;
-            padding: 12px 20px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,255,255,0.2);
-            pointer-events: auto; backdrop-filter: blur(10px); max-width: 350px; color: white;
+            background: rgba(255, 255, 255, 0.85); border-left: 4px solid #00ffff;
+            padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            pointer-events: auto; backdrop-filter: blur(10px); max-width: 350px;
         }
-        .header-panel h1 { font-size: 18px; color: #00ffff; margin-bottom: 4px; font-family: 'Courier New', Courier, monospace; }
-        .header-panel p { font-size: 12px; color: #aaa; }
+        .header-panel h1 { font-size: 18px; color: #1e293b; margin-bottom: 4px; font-weight: 800; }
+        .header-panel p { font-size: 13px; color: #64748b; }
 
-        /* กล่องข้อมูล (Info Card) แบบ Sci-Fi */
+        /* กล่องข้อมูล (Info Card) */
         .info-card {
             position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(50px);
-            background: rgba(10, 15, 25, 0.85); border: 1px solid #00ffff; border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0,255,255,0.3); z-index: 20; width: 90%; max-width: 340px;
-            opacity: 0; pointer-events: none; transition: all 0.4s ease; backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0; border-top: 3px solid #00ffff;
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 20; width: 90%; max-width: 340px;
+            opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
         }
         .info-card.active { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
         
         .card-content { padding: 20px; }
-        .card-content h3 { font-size: 20px; color: #00ffff; margin-bottom: 10px; border-bottom: 1px solid rgba(0,255,255,0.3); padding-bottom: 5px; }
-        .card-content p { font-size: 14px; color: #ddd; line-height: 1.5; margin-bottom: 20px; }
+        .card-content h3 { font-size: 18px; color: #0f172a; margin-bottom: 8px; font-weight: bold; }
+        .card-content p { font-size: 14px; color: #475569; line-height: 1.5; margin-bottom: 20px; }
         
         .close-btn {
-            background: transparent; color: #00ffff; border: 1px solid #00ffff; width: 100%;
-            padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; width: 100%;
+            padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
-        .close-btn:hover { background: rgba(0, 255, 255, 0.2); }
+        .close-btn:active { background: #e2e8f0; }
 
     </style>
+    <!-- โหลดฟอนต์ภาษาไทย Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -82,55 +80,56 @@
 
     <div class="ui-overlay">
         <div class="header-panel">
-            <h1>SYSTEM:// MAP_ONLINE</h1>
-            <p>ลากนิ้วเพื่อหมุน 360° | แตะที่ป้ายโฮโลแกรมเพื่อดูข้อมูลอาคาร</p>
+            <h1>📍 แผนที่วิทยาเขตอัจฉริยะ</h1>
+            <p>ใช้นิ้วเดียวหมุน | ใช้สองนิ้วซูมหรือเลื่อน | แตะที่ป้ายเพื่อดูข้อมูล</p>
         </div>
     </div>
 
-    <!-- กล่องข้อความแสดงผล (Info Card) -->
+    <!-- กล่องข้อความแสดงผล -->
     <div class="info-card" id="infoCard">
         <div class="card-content">
-            <h3 id="cardTitle">BUILDING_NAME</h3>
-            <p id="cardDesc">Loading data...</p>
-            <button class="close-btn" onclick="closeCard()">[ X ] CLOSE PANEL</button>
+            <h3 id="cardTitle">ชื่อสถานที่</h3>
+            <p id="cardDesc">กำลังโหลดข้อมูล...</p>
+            <button class="close-btn" onclick="closeCard()">ปิดหน้าต่าง</button>
         </div>
     </div>
 
-    <!-- โหลด Three.js และไลบรารี -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
 
     <script>
         let scene, camera, renderer, labelRenderer, controls;
-        let buildingHitboxes = [];
+        let interactableObjects = []; // สำหรับตรวจจับการกดตึก
         let raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
 
-        // ข้อมูลสถานที่
-        const buildingData = [
-            { id: 1, name: "ECC BUILDING", desc: "อาคารเรียนรวมและศูนย์ปฏิบัติการวิศวกรรม โครงสร้างหลักทำจากกระจกและเหล็ก", color: 0x8899a6, x: -3, z: -1.5, w: 2.5, h: 3.5, d: 2 },
-            { id: 2, name: "KMUIDS INST.", desc: "สถาบันการศึกษานานาชาติ พื้นที่นวัตกรรมและแหล่งเรียนรู้ระดับสากล", color: 0xaaaaaa, x: 2, z: -4.5, w: 3, h: 2, d: 2.5 },
-            { id: 3, name: "MEDICAL FACULTY", desc: "อาคารคณะแพทยศาสตร์และโรงพยาบาลเพื่อการวิจัย", color: 0xcdd6df, x: -1.5, z: -5.5, w: 2.5, h: 2.5, d: 2 },
-            { id: 4, name: "RECTOR'S OFFICE", desc: "ศูนย์กลางการบริหารงานของมหาวิทยาลัย ศูนย์สั่งการหลัก", color: 0x999999, x: 5, z: -3.5, w: 2.5, h: 2.8, d: 2 },
-            { id: 5, name: "CANTEEN B", desc: "ศูนย์อาหารและเสบียงสำหรับนักศึกษา", color: 0xbbbbbb, x: -3.5, z: 4.5, w: 2.2, h: 1.5, d: 2 },
-            { id: 6, name: "DORMITORY", desc: "โซนที่พักอาศัยของนักศึกษา", color: 0xa0aab5, x: -7, z: -1, w: 2.5, h: 4.5, d: 3 },
-            { id: 7, name: "TRANSIT STATION", desc: "สถานีรถไฟขนส่งมวลชน เชื่อมต่อภายนอกแคมปัส", color: 0x666666, x: 0, z: 2.5, w: 8, h: 0.8, d: 1.2 }
+        // ข้อมูลสถานที่ (ภาษาไทยทั้งหมด)
+        const mapData = [
+            { id: 1, name: "ตึก ECC", desc: "อาคารเรียนรวม ศูนย์ปฏิบัติการทางวิศวกรรม โครงสร้างหลักเป็นกระจกประหยัดพลังงาน", color: 0xffffff, x: -3, z: -1.5, w: 2.5, h: 3.5, d: 2 },
+            { id: 2, name: "KMUIDS", desc: "โรงเรียนสาธิตนานาชาติ พื้นที่นวัตกรรมและแหล่งเรียนรู้ระดับสากล", color: 0xf8fafc, x: 2, z: -4.5, w: 3, h: 2, d: 2.5 },
+            { id: 3, name: "คณะแพทย์", desc: "อาคารคณะแพทยศาสตร์และศูนย์วิจัยเทคโนโลยีสุขภาพ", color: 0xf1f5f9, x: -1.5, z: -5.5, w: 2.5, h: 2.5, d: 2 },
+            { id: 4, name: "ตึกอธิการ", desc: "ศูนย์กลางการบริหารงานของมหาวิทยาลัย ศูนย์สั่งการหลัก", color: 0xffffff, x: 5, z: -3.5, w: 2.5, h: 2.8, d: 2 },
+            { id: 5, name: "โรงอาหาร B", desc: "ศูนย์อาหารและคอมมูนิตี้สำหรับนักศึกษา มีจุดชาร์จพลังงานสะอาด", color: 0xf8fafc, x: -3.5, z: 4.5, w: 2.2, h: 1.5, d: 2 },
+            { id: 6, name: "หอนักศึกษา", desc: "โซนที่พักอาศัยของนักศึกษา ล้อมรอบด้วยพื้นที่สีเขียว", color: 0xf1f5f9, x: -7, z: -1, w: 2.5, h: 4.5, d: 3 },
+            { id: 7, name: "สถานีรถไฟ", desc: "สถานีรถไฟขนส่งมวลชน เชื่อมต่อการเดินทางภายนอกแคมปัส", color: 0xe2e8f0, x: 0, z: 2.5, w: 8, h: 0.8, d: 1.2 }
         ];
 
         function init() {
             const container = document.getElementById('canvas-container');
             
-            // 1. Scene
+            // 1. Scene & Background (สีขาวสว่าง)
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x0d1117, 0.02); // หมอกบางๆ แนว Sci-Fi
+            scene.background = new THREE.Color(0xf4f7f9);
+            scene.fog = new THREE.FogExp2(0xf4f7f9, 0.015);
             
             // 2. Camera
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 16, 18);
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 18, 22);
 
             // 3. WebGL Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
@@ -142,62 +141,64 @@
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
             labelRenderer.domElement.style.position = 'absolute';
             labelRenderer.domElement.style.top = '0px';
-            labelRenderer.domElement.style.pointerEvents = 'none'; 
+            labelRenderer.domElement.style.pointerEvents = 'none'; // ป้องกันการบล็อกทัชสกรีน
             document.body.appendChild(labelRenderer.domElement);
 
-            // 5. Controls (หมุนสมูท)
+            // 5. Controls (เสถียรบนมือถือ หมุน 1 นิ้ว)
             controls = new THREE.OrbitControls(camera, labelRenderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.1; 
-            controls.minDistance = 5;
-            controls.maxDistance = 40;
+            controls.enableDamping = true; // ให้การหมุนมีความสมูท (มีแรงเฉื่อย)
+            controls.dampingFactor = 0.08;
+            controls.maxPolarAngle = Math.PI / 2 - 0.1; // ไม่ให้มุดดิน
+            controls.minDistance = 10;
+            controls.maxDistance = 45;
+            
+            // ตั้งค่าสำหรับมือถือโดยเฉพาะ
+            controls.touches = {
+                ONE: THREE.TOUCH.ROTATE, // 1 นิ้ว = หมุน
+                TWO: THREE.TOUCH.DOLLY_PAN // 2 นิ้ว = ซูม และ เลื่อน
+            };
 
-            // 6. แสงไฟ (สมจริง + แนวไซไฟ)
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            // 6. แสงไฟ (Daylight Sci-Fi)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
-            dirLight.position.set(15, 20, 10);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(10, 25, 15);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
 
-            // แสงไฟสีฟ้าสร้างบรรยากาศ (Sci-Fi Ambient)
-            const blueLight = new THREE.PointLight(0x00ffff, 0.5, 50);
-            blueLight.position.set(0, 5, 0);
-            scene.add(blueLight);
-
-            // 7. สร้างพื้นและทางเดิน
+            // 7. สร้างสภาพแวดล้อม ธรรมชาติ + ทางเดิน
             createEnvironment();
+            createTrees();
 
             // 8. สร้างอาคารเสมือนจริงและป้าย
-            buildingData.forEach(data => createRealisticBuilding(data));
+            mapData.forEach(data => createRealisticBuilding(data));
 
             // Events
             window.addEventListener('resize', onWindowResize);
-            labelRenderer.domElement.addEventListener('pointerdown', onDocumentClick);
+            labelRenderer.domElement.addEventListener('pointerdown', onDocumentClick); // รองรับทัชและคลิก
 
             animate();
         }
 
         function createEnvironment() {
-            // พื้นหลัก (สีทึบสไตล์คอนกรีต/ไซไฟ)
-            const groundGeo = new THREE.PlaneGeometry(35, 35);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a202c, roughness: 0.9, metalness: 0.1 });
+            // พื้นฐาน (Ground) - สีเทาอ่อนสะอาดตา
+            const groundGeo = new THREE.PlaneGeometry(40, 40);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.8 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // สร้างเครือข่ายเส้นทางเดิน (Walkways) เชื่อมต่อตึก
-            const pathMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, roughness: 0.6 }); // สีทางเดินสว่างกว่าพื้น
+            // ทางเดิน (Walkways) - สีขาว
+            const pathMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
             
             const paths = [
-                { x: 0, z: -1, w: 20, h: 1.5 }, // เส้นนอนหลักกลาง
-                { x: 0, z: -4.5, w: 15, h: 1.2 }, // เส้นนอนบน
-                { x: -3, z: 1.5, w: 1.5, h: 8 }, // เส้นตั้งซ้าย
+                { x: 0, z: -1, w: 22, h: 1.5 }, // เส้นนอนหลักกลาง
+                { x: 0, z: -4.5, w: 16, h: 1.2 }, // เส้นนอนบน
+                { x: -3, z: 1.5, w: 1.5, h: 8 }, // เส้นตั้งซ้าย (ไป ECC/โรงอาหาร)
                 { x: 2, z: -2.5, w: 1.5, h: 4 }, // เส้นตั้งกลาง
                 { x: 5, z: -1, w: 1.5, h: 6 }, // เส้นตั้งขวา
                 { x: -7, z: -1, w: 6, h: 1.5 } // ทางเชื่อมไปหอพัก
@@ -207,63 +208,98 @@
                 const pathGeo = new THREE.PlaneGeometry(p.w, p.h);
                 const pathMesh = new THREE.Mesh(pathGeo, pathMat);
                 pathMesh.rotation.x = -Math.PI / 2;
-                pathMesh.position.set(p.x, 0.02, p.z); // ลอยเหนือพื้นนิดนึง
+                pathMesh.position.set(p.x, 0.03, p.z);
                 pathMesh.receiveShadow = true;
                 scene.add(pathMesh);
+            });
+        }
+
+        function createTrees() {
+            // โมเดลต้นไม้แนว Eco-SciFi (รูปทรงเรขาคณิตสะอาดตา)
+            const treeGeo = new THREE.ConeGeometry(0.4, 1.2, 5); // ใบไม้ 5 เหลี่ยม
+            const treeMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.8 }); // สีเขียวธรรมชาติ
+            const trunkGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.4);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x64748b }); // ลำต้นสีเทาเงิน
+
+            // จุดปลูกต้นไม้
+            const treePositions = [
+                {x: -6, z: -3}, {x: -5, z: -4}, {x: -4.5, z: -2.5}, 
+                {x: 3, z: -1}, {x: 3.5, z: -1.5}, {x: 6, z: -2}, {x: 6.5, z: -5},
+                {x: 1, z: 3.5}, {x: -1, z: 4.5}, {x: -2, z: 3}
+            ];
+
+            treePositions.forEach(pos => {
+                const group = new THREE.Group();
+                
+                const leaves = new THREE.Mesh(treeGeo, treeMat);
+                leaves.position.y = 0.8;
+                leaves.castShadow = true;
+                
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 0.2;
+                trunk.castShadow = true;
+                
+                group.add(leaves);
+                group.add(trunk);
+                group.position.set(pos.x, 0, pos.z);
+                scene.add(group);
             });
         }
 
         function createRealisticBuilding(data) {
             const group = new THREE.Group();
             
-            // วัสดุหลักของตึก (คอนกรีต/โลหะ)
-            const coreGeo = new THREE.BoxGeometry(data.w * 0.9, data.h, data.d * 0.9);
-            const coreMat = new THREE.MeshStandardMaterial({ 
-                color: data.color, 
-                roughness: 0.7,
-                metalness: 0.3 
-            });
+            // แกนอาคาร (สีขาว/สว่าง)
+            const coreGeo = new THREE.BoxGeometry(data.w * 0.85, data.h, data.d * 0.85);
+            const coreMat = new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.8 });
             const coreMesh = new THREE.Mesh(coreGeo, coreMat);
             coreMesh.position.y = data.h / 2;
             coreMesh.castShadow = true;
             coreMesh.receiveShadow = true;
             group.add(coreMesh);
 
-            // เปลือกตึกจำลองเป็นกระจกสมจริง (Realistic Glass facade)
-            const glassGeo = new THREE.BoxGeometry(data.w, data.h * 0.9, data.d);
+            // กระจกครอบอาคารแนวล้ำยุค (โปร่งใสสีฟ้า)
+            const glassGeo = new THREE.BoxGeometry(data.w, data.h * 0.95, data.d);
             const glassMat = new THREE.MeshPhysicalMaterial({
-                color: 0x88ccff,
-                metalness: 0.9,
+                color: 0x38bdf8,
+                metalness: 0.2,
                 roughness: 0.1,
-                transmission: 0.7, // ทำให้ทะลุเหมือนกระจก
+                transmission: 0.8, // ทะลุแสง
                 transparent: true,
-                opacity: 0.7
+                opacity: 0.6
             });
             const glassMesh = new THREE.Mesh(glassGeo, glassMat);
             glassMesh.position.y = data.h / 2;
             group.add(glassMesh);
 
-            // กล่องดักจับการคลิก (Invisible Hitbox)
+            // กล่องดักจับการคลิก (เพื่อความแม่นยำ)
             const hitBoxGeo = new THREE.BoxGeometry(data.w, data.h, data.d);
             const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
             const hitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
             hitBox.position.y = data.h / 2;
-            hitBox.userData = data;
+            hitBox.userData = data; // ผูกข้อมูลภาษาไทย
             group.add(hitBox);
-            buildingHitboxes.push(hitBox);
+            interactableObjects.push(hitBox);
 
             group.position.set(data.x, 0, data.z);
             scene.add(group);
 
-            // สร้างป้ายชื่อ Hologram HTML
+            // สร้างป้ายชื่อโฮโลแกรม
             const labelDiv = document.createElement('div');
             labelDiv.className = 'building-label';
             labelDiv.textContent = data.name;
             labelDiv.style.pointerEvents = 'auto'; 
-            labelDiv.onclick = () => showCard(data);
+            
+            // เมื่อกดป้าย ให้เปิดข้อมูล
+            labelDiv.addEventListener('pointerdown', (e) => {
+                e.stopPropagation(); // กันการส่ง event ไปที่ฉากหลัง
+                showCard(data);
+                // หันกล้องเบาๆ
+                controls.target.copy(group.position);
+            });
 
             const labelObj = new THREE.CSS2DObject(labelDiv);
-            labelObj.position.set(0, data.h + 1.2, 0); // ลอยเหนือตึก
+            labelObj.position.set(0, data.h + 1, 0); // ลอยเหนือตึก
             group.add(labelObj);
         }
 
@@ -274,18 +310,18 @@
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
         }
 
+        // กดที่ตัวตึกโดยตรง
         function onDocumentClick(event) {
+            // ใช้ pointerdown สำหรับมือถือ
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(buildingHitboxes);
+            const intersects = raycaster.intersectObjects(interactableObjects);
 
             if (intersects.length > 0) {
                 const selected = intersects[0].object;
                 showCard(selected.userData);
-                
-                // หันกล้องไปจุดที่กด
                 controls.target.copy(selected.parent.position);
             }
         }
@@ -302,7 +338,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(); // อัปเดตการหมุนให้สมูท
+            controls.update(); // ขาดไม่ได้เพื่อให้การหมุนสมูทและเสถียร
             renderer.render(scene, camera);
             labelRenderer.render(scene, camera);
         }
