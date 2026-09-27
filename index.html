@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Realistic 3D Campus Diorama</title>
+    <title>Realistic 3D Campus Diorama - Black Edges</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', Tahoma, sans-serif; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f0f4f8; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background-color: #f0f4f8; touch-action: none; }
         
-        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; touch-action: none; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        /* เลเยอร์ของป้าย */
+        #css2d-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        #css2d-container > div { pointer-events: none; }
         
         /* ป้ายชื่อตึก */
         .building-label {
-            background: rgba(255, 255, 255, 0.9);
-            color: #1e293b;
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
             padding: 6px 14px;
             border: 2px solid #38bdf8;
             border-radius: 8px;
@@ -35,11 +39,8 @@
         .building-label:active { transform: scale(0.9); }
 
         /* UI คอนโทรล */
-        .ui-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; pointer-events: none; padding: 20px;
-        }
-
+        .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; padding: 20px; }
+        
         .header-panel {
             background: rgba(255, 255, 255, 0.95); border-left: 5px solid #38bdf8;
             padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -65,13 +66,13 @@
             padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         .close-btn:active { background: #e2e8f0; }
-
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="canvas-container"></div>
+    <div id="css2d-container"></div>
 
     <div class="ui-overlay">
         <div class="header-panel">
@@ -79,7 +80,6 @@
         </div>
     </div>
 
-    <!-- กล่องข้อความแสดงผล -->
     <div class="info-card" id="infoCard">
         <div class="card-content">
             <h3 id="cardTitle">ชื่อสถานที่</h3>
@@ -88,61 +88,73 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 
-    <script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
         let scene, camera, renderer, labelRenderer, controls;
         let interactableObjects = [];
         let raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
 
-        // ข้อมูลตึกพร้อมสีสัน
         const mapData = [
             { id: 1, name: "ตึก ECC", desc: "อาคารเรียนรวม ศูนย์ปฏิบัติการวิศวกรรม", color: 0x3b82f6, x: -4, z: -2, w: 3, h: 4.5, d: 2.5 },
             { id: 2, name: "KMUIDS", desc: "โรงเรียนสาธิตนานาชาติ", color: 0xf59e0b, x: 2, z: -5, w: 3.5, h: 2.5, d: 3 },
             { id: 3, name: "คณะแพทย์", desc: "คณะแพทยศาสตร์และเทคโนโลยีสุขภาพ", color: 0x10b981, x: -1.5, z: -6, w: 2.5, h: 3.5, d: 2 },
             { id: 4, name: "ตึกอธิการ", desc: "สำนักงานอธิการบดี", color: 0x8b5cf6, x: 6, z: -4, w: 3, h: 3, d: 2.5 },
             { id: 5, name: "โรงอาหาร B", desc: "ศูนย์อาหารนักศึกษา", color: 0xef4444, x: -4, z: 4, w: 2.5, h: 1.5, d: 2.5 },
-            { id: 6, name: "หอนักศึกษา", desc: "หอพักในมหาวิทยาลัย", color: 0x06b6d4, x: -8, z: -1.5, w: 2.5, h: 5.5, d: 3 },
+            { id: 6, name: "หอนักศึกษา", desc: "หอพักนักศึกษา (ดีไซน์พิเศษ)", color: 0x06b6d4, x: -8, z: -1.5, w: 2.5, h: 5.5, d: 3 },
             { id: 7, name: "สถานีรถไฟ", desc: "สถานีรถไฟขนส่งมวลชน", color: 0x64748b, x: 0, z: 2.5, w: 8, h: 1, d: 1.5 }
         ];
 
+        // ฟังก์ชันวาดเส้นขอบสีดำ
+        function addBlackEdges(mesh) {
+            const edges = new THREE.EdgesGeometry(mesh.geometry);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
+            mesh.add(line);
+        }
+
         function init() {
-            const container = document.getElementById('canvas-container');
+            const webglContainer = document.getElementById('canvas-container');
+            const css2dContainer = document.getElementById('css2d-container');
             
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0xf0f4f8);
             
-            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 20, 25);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 22, 28);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
+            webglContainer.appendChild(renderer.domElement);
 
-            labelRenderer = new THREE.CSS2DRenderer();
+            labelRenderer = new CSS2DRenderer();
             labelRenderer.setSize(window.innerWidth, window.innerHeight);
-            labelRenderer.domElement.style.position = 'absolute';
-            labelRenderer.domElement.style.top = '0px';
-            // ป้องกันไม่ให้เลเยอร์ป้ายบล็อกการทัชหน้าจอ
-            labelRenderer.domElement.style.pointerEvents = 'none'; 
-            document.body.appendChild(labelRenderer.domElement);
+            css2dContainer.appendChild(labelRenderer.domElement);
 
-            // ติดตั้ง Controls ไว้ที่ renderer 3D ทำให้จิ้มจุดไหนก็หมุนได้
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            // Controls ผูกกับ renderer หลัก (จิ้มหมุนได้ทุกจุด)
+            controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2 - 0.1; 
             controls.minDistance = 10;
-            controls.maxDistance = 45;
+            controls.maxDistance = 60;
+            controls.target.set(0, 0, 0);
 
             // แสงสว่าง
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xfff5e6, 0.8);
             dirLight.position.set(15, 30, 15);
@@ -152,13 +164,18 @@
             scene.add(dirLight);
 
             createBaseAndBorder();
-            createEnvironment();
             
-            // สร้างตึกที่มีรายละเอียดแบบชั้นๆ
-            mapData.forEach(data => createDetailedBuilding(data));
+            // สร้างอาคาร
+            mapData.forEach(data => {
+                if (data.name === "หอนักศึกษา") {
+                    createDormitoryBuilding(data); // สร้างหอพักตามโค้ดตัวอย่างที่ให้มา
+                } else {
+                    createDetailedBuilding(data);  // สร้างอาคารปกติ
+                }
+            });
 
             window.addEventListener('resize', onWindowResize);
-            // ตรวจจับการคลิกที่ 3D Canvas
+            // ให้กดตึกได้
             renderer.domElement.addEventListener('pointerdown', onDocumentClick);
 
             animate();
@@ -174,59 +191,129 @@
             scene.add(ground);
 
             // กรอบแผนที่ (Border)
-            const borderMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
-            const thickness = 0.5;
-            const height = 1;
+            const borderMat = new THREE.MeshStandardMaterial({ color: 0x334155 });
+            const thickness = 0.5; const height = 1;
 
             const borders = [
-                { w: 28 + thickness*2, d: thickness, x: 0, z: -10 - thickness/2 }, // กรอบบน
-                { w: 28 + thickness*2, d: thickness, x: 0, z: 10 + thickness/2 },  // กรอบล่าง
-                { w: thickness, d: 20, x: -14 - thickness/2, z: 0 },               // กรอบซ้าย
-                { w: thickness, d: 20, x: 14 + thickness/2, z: 0 }                 // กรอบขวา
+                { w: 28 + thickness*2, d: thickness, x: 0, z: -10 - thickness/2 },
+                { w: 28 + thickness*2, d: thickness, x: 0, z: 10 + thickness/2 },
+                { w: thickness, d: 20, x: -14 - thickness/2, z: 0 },
+                { w: thickness, d: 20, x: 14 + thickness/2, z: 0 }
             ];
 
             borders.forEach(b => {
-                const bGeo = new THREE.BoxGeometry(b.w, height, b.d);
-                const bMesh = new THREE.Mesh(bGeo, borderMat);
+                const bMesh = new THREE.Mesh(new THREE.BoxGeometry(b.w, height, b.d), borderMat);
                 bMesh.position.set(b.x, height/2 - 0.1, b.z);
-                bMesh.castShadow = true;
-                bMesh.receiveShadow = true;
+                addBlackEdges(bMesh); // ตีเส้นขอบกรอบ
                 scene.add(bMesh);
             });
         }
 
-        function createEnvironment() {
-            // ทางเดิน (Walkways)
-            const pathMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-            const paths = [
-                { w: 22, d: 1.5, x: -2, z: -1 }, { w: 14, d: 1.2, x: 0, z: -3.5 },
-                { w: 1.5, d: 6, x: -2.5, z: 2 }, { w: 1.5, d: 4, x: 2, z: -2 },
-                { w: 1.5, d: 5, x: 5, z: -1 }
-            ];
-            paths.forEach(p => {
-                const pathMesh = new THREE.Mesh(new THREE.PlaneGeometry(p.w, p.d), pathMat);
-                pathMesh.rotation.x = -Math.PI / 2;
-                pathMesh.position.set(p.x, 0.02, p.z);
-                pathMesh.receiveShadow = true;
-                scene.add(pathMesh);
-            });
+        // ==========================================
+        // ฟังก์ชันสร้างหอนักศึกษาแบบ C-Shape (จากโค้ดอ้างอิงของคุณ)
+        // ==========================================
+        function createDormitoryBuilding(data) {
+            const group = new THREE.Group();
+            
+            const floorHeight = 4.5;
+            const totalFloors = 6;
+            
+            const createBuildingShape = (offset = 0) => {
+                const shape = new THREE.Shape();
+                const w = 40 + offset;
+                const d = 30 + offset;
+                
+                shape.moveTo(-w, d);
+                shape.lineTo(w, d);
+                shape.lineTo(w, -d/3);
+                shape.quadraticCurveTo(0, -d*2.5 - offset, -w, -d/3);
+                shape.lineTo(-w, d);
 
-            // ต้นไม้จำลอง
-            const treeMat = new THREE.MeshStandardMaterial({ color: 0x10b981 });
-            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78716c });
-            const treePositions = [{x:-6,z:-3},{x:-5,z:-4},{x:3,z:-1},{x:7,z:-2},{x:1,z:3.5},{x:-1,z:4},{x:-5,z:2}];
-            treePositions.forEach(pos => {
-                const g = new THREE.Group();
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.8, 4), treeMat);
-                leaves.position.y = 0.6; leaves.castShadow = true;
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.3), trunkMat);
-                trunk.position.y = 0.15; trunk.castShadow = true;
-                g.add(leaves, trunk);
-                g.position.set(pos.x, 0, pos.z);
-                scene.add(g);
-            });
+                const hole = new THREE.Path();
+                hole.moveTo(-15, 12);
+                hole.lineTo(15, 12);
+                hole.lineTo(15, -6);
+                hole.lineTo(-15, -6);
+                hole.lineTo(-15, 12);
+                shape.holes.push(hole);
+
+                return shape;
+            };
+
+            const shapeSlab = createBuildingShape(0);
+            const shapeGlass = createBuildingShape(-1.0);
+
+            const extrudeSettingsSlab = { depth: 1.2, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.15, bevelThickness: 0.15 };
+            const extrudeSettingsGlass = { depth: floorHeight - 1.2, bevelEnabled: false, steps: 1 };
+
+            const geoSlab = new THREE.ExtrudeGeometry(shapeSlab, extrudeSettingsSlab);
+            const geoGlass = new THREE.ExtrudeGeometry(shapeGlass, extrudeSettingsGlass);
+
+            geoSlab.rotateX(Math.PI / 2);
+            geoGlass.rotateX(Math.PI / 2);
+
+            const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const matGlass = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.5 });
+            const matPillar = new THREE.MeshStandardMaterial({ color: 0xd97706 });
+
+            for (let i = 0; i < totalFloors; i++) {
+                const floorGroup = new THREE.Group();
+                
+                const slab = new THREE.Mesh(geoSlab, matWhite);
+                slab.position.y = 1.2; 
+                addBlackEdges(slab); // ตีขอบดำ
+                floorGroup.add(slab);
+
+                if (i > 0) {
+                    const glass = new THREE.Mesh(geoGlass, matGlass);
+                    glass.position.y = floorHeight; 
+                    addBlackEdges(glass); // ตีขอบดำ
+                    floorGroup.add(glass);
+                } else {
+                    const pillarGeo = new THREE.CylinderGeometry(1.4, 1.4, floorHeight - 1.2, 16);
+                    const pillarPositions = [ [-30, -20], [-18, -28], [0, -32], [18, -28], [30, -20], [-25, 0], [25, 0], [-15, 20], [15, 20], [0, 25] ];
+                    pillarPositions.forEach(pos => {
+                        const pillar = new THREE.Mesh(pillarGeo, matPillar);
+                        pillar.position.set(pos[0], (floorHeight-1.2)/2 + 1.2, pos[1]);
+                        addBlackEdges(pillar);
+                        floorGroup.add(pillar);
+                    });
+
+                    const core = new THREE.Mesh(new THREE.BoxGeometry(40, floorHeight - 1.2, 25), matWhite);
+                    core.position.set(0, (floorHeight-1.2)/2 + 1.2, 10);
+                    addBlackEdges(core);
+                    floorGroup.add(core);
+                }
+
+                floorGroup.position.y = i * floorHeight;
+                group.add(floorGroup);
+            }
+
+            // หลังคา
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(30, 4, 15), matWhite);
+            roof.position.set(0, totalFloors * floorHeight + 2, 5);
+            addBlackEdges(roof);
+            group.add(roof);
+
+            // ย่อส่วนตึกให้เข้ากับแผนที่ของเรา (Scale Down)
+            group.scale.set(0.04, 0.04, 0.04);
+            group.position.set(data.x, 0, data.z);
+            group.rotation.y = Math.PI / 4; // หันมุมนิดหน่อยให้สวย
+            scene.add(group);
+
+            // Hitbox สำหรับการกด
+            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(3, data.h, 3), new THREE.MeshBasicMaterial({ visible: false }));
+            hitbox.position.set(data.x, data.h/2, data.z);
+            hitbox.userData = data;
+            scene.add(hitbox);
+            interactableObjects.push(hitbox);
+
+            createLabelObject(data, group.position, data.h + 0.5);
         }
 
+        // ==========================================
+        // ฟังก์ชันสร้างตึกปกติ
+        // ==========================================
         function createDetailedBuilding(data) {
             const group = new THREE.Group();
             
@@ -234,46 +321,33 @@
             const floorCount = Math.max(1, Math.floor(data.h / floorHeight));
 
             const baseMat = new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.5 });
-            const glassMat = new THREE.MeshStandardMaterial({ color: 0xbae6fd, metalness: 0.5, roughness: 0.2 });
-            const concreteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0xbae6fd });
+            const concreteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
-            // สร้างเป็นชั้นๆ (Floors)
             for (let i = 0; i < floorCount; i++) {
                 const yPos = (i * floorHeight) + (floorHeight / 2);
 
-                // พื้น/เพดานของแต่ละชั้น
                 const slab = new THREE.Mesh(new THREE.BoxGeometry(data.w + 0.1, 0.05, data.d + 0.1), concreteMat);
                 slab.position.y = (i * floorHeight);
-                slab.castShadow = true;
+                addBlackEdges(slab); // ขอบดำ
                 group.add(slab);
 
-                // บล็อกห้องที่มีสีประจำตึก
                 const room = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.95, floorHeight - 0.05, data.d * 0.95), baseMat);
                 room.position.y = yPos;
-                room.castShadow = true;
+                addBlackEdges(room); // ขอบดำ
                 group.add(room);
 
-                // กระจกหน้าต่างแปะรอบๆ ตึก
-                const windowGeom = new THREE.BoxGeometry(data.w * 0.98, floorHeight * 0.7, data.d * 0.98);
-                const windows = new THREE.Mesh(windowGeom, glassMat);
+                const windows = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.98, floorHeight * 0.7, data.d * 0.98), glassMat);
                 windows.position.y = yPos;
+                addBlackEdges(windows); // ขอบดำ
                 group.add(windows);
-
-                // สร้างประตูทางเข้าเฉพาะชั้น 1 (ชั้นล่างสุด)
-                if (i === 0) {
-                    const door = new THREE.Mesh(new THREE.BoxGeometry(1, floorHeight * 0.8, data.d + 0.05), new THREE.MeshStandardMaterial({ color: 0x334155 }));
-                    door.position.set(0, floorHeight * 0.4, 0);
-                    group.add(door);
-                }
             }
 
-            // หลังคาตึก
             const roof = new THREE.Mesh(new THREE.BoxGeometry(data.w + 0.1, 0.1, data.d + 0.1), concreteMat);
             roof.position.y = floorCount * floorHeight;
-            roof.castShadow = true;
+            addBlackEdges(roof); // ขอบดำ
             group.add(roof);
 
-            // Hitbox จับการคลิก
             const hitbox = new THREE.Mesh(new THREE.BoxGeometry(data.w + 0.2, data.h, data.d + 0.2), new THREE.MeshBasicMaterial({ visible: false }));
             hitbox.position.y = data.h / 2;
             hitbox.userData = data;
@@ -283,21 +357,27 @@
             group.position.set(data.x, 0, data.z);
             scene.add(group);
 
-            // สร้างป้ายชื่อโฮโลแกรม
-            const labelDiv = document.createElement('div');
-            labelDiv.className = 'building-label';
-            labelDiv.textContent = data.name;
-            labelDiv.style.pointerEvents = 'auto'; // ให้ป้ายโดนคลิกได้อิสระจาก Canvas
+            createLabelObject(data, group.position, data.h + 0.8);
+        }
+
+        // ==========================================
+        // ป้ายชื่อตึก
+        // ==========================================
+        function createLabelObject(data, position, heightOffset) {
+            const div = document.createElement('div');
+            div.className = 'building-label';
+            div.textContent = data.name;
+            div.style.pointerEvents = 'auto';
             
-            labelDiv.addEventListener('pointerdown', (e) => {
+            div.addEventListener('pointerdown', (e) => {
                 e.stopPropagation();
                 showCard(data);
-                controls.target.copy(group.position);
+                controls.target.copy(position);
             });
 
-            const labelObj = new THREE.CSS2DObject(labelDiv);
-            labelObj.position.set(0, data.h + 0.8, 0);
-            group.add(labelObj);
+            const labelObj = new CSS2DObject(div);
+            labelObj.position.set(position.x, heightOffset, position.z);
+            scene.add(labelObj);
         }
 
         function onWindowResize() {
@@ -308,7 +388,6 @@
         }
 
         function onDocumentClick(event) {
-            // รองรับการคลิก/จิ้มที่ตึกโดยตรง
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -318,19 +397,24 @@
             if (intersects.length > 0) {
                 const selected = intersects[0].object;
                 showCard(selected.userData);
-                controls.target.copy(selected.parent.position);
+                
+                // หาแกน X, Z ของตึกที่ถูกคลิก
+                let targetPos = new THREE.Vector3();
+                selected.getWorldPosition(targetPos);
+                targetPos.y = 0;
+                controls.target.copy(targetPos);
             } else {
-                closeCard(); // จิ้มพื้นว่างๆ เพื่อปิดหน้าต่าง
+                closeCard();
             }
         }
 
-        function showCard(data) {
+        window.showCard = function(data) {
             document.getElementById('cardTitle').innerText = data.name;
             document.getElementById('cardDesc').innerText = data.desc;
             document.getElementById('infoCard').classList.add('active');
         }
 
-        function closeCard() {
+        window.closeCard = function() {
             document.getElementById('infoCard').classList.remove('active');
         }
 
