@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Map - สถาบันบำราศนราดูร (Updated Layout)</title>
+    <title>3D Map - สถาบันบำราศนราดูร (Updated 2026 Layout)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', Tahoma, sans-serif; }
         body, html { width: 100%; height: 100%; overflow: hidden; background-color: #e2e8f0; touch-action: none; }
@@ -12,52 +12,60 @@
         #css2d-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
         #css2d-container > div { pointer-events: none; }
         
-        /* ป้ายชื่อตึก */
+        /* ป้ายชื่อตึกพื้นขาว ขอบดำ */
         .building-label {
             background: rgba(255, 255, 255, 0.95); color: #0f172a;
-            padding: 4px 10px; border: 1.5px solid #000; border-radius: 4px;
-            font-size: 12px; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 4px 10px; border: 1.5px solid #111; border-radius: 6px;
+            font-size: 11px; font-weight: bold; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             pointer-events: auto; cursor: pointer; transition: all 0.2s;
-            text-align: center; white-space: nowrap;
+            text-align: center; white-space: nowrap; letter-spacing: 0.2px;
         }
         .building-label:active { transform: scale(0.9); }
+        
+        /* ป้ายลานจอดรถ */
+        .parking-label {
+            background: #2563eb; color: #fff; border: 1.5px solid #fff;
+        }
 
-        /* ป้ายทางเข้า-ออก (สีแดง) */
-        .gate-label {
-            background: #ef4444; color: white; padding: 4px 12px;
-            border: 2px solid #b91c1c; border-radius: 12px; font-size: 13px;
-            font-weight: bold; pointer-events: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        /* ป้ายจุดก่อสร้าง */
+        .construct-label {
+            background: #e0f2fe; color: #0369a1; border: 1.5px dashed #0284c7;
+        }
+
+        /* ป้าย 7-11 */
+        .seven-label {
+            background: #ffffff; color: #ea580c; border: 1.5px solid #16a34a; font-weight: 900; padding: 2px 6px;
         }
 
         /* UI คอนโทรล */
-        .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; padding: 20px; }
+        .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; padding: 15px; }
         
         .header-panel {
-            background: rgba(255, 255, 255, 0.95); border-left: 5px solid #333;
+            background: rgba(255, 255, 255, 0.95); border-left: 5px solid #7e22ce;
             padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            pointer-events: auto; display: inline-block; max-width: 400px;
+            pointer-events: auto; display: inline-block; max-width: 420px;
         }
-        .header-panel h1 { font-size: 18px; color: #111; margin: 0; font-weight: bold; }
-        .header-panel p { font-size: 13px; color: #555; margin-top: 4px; line-height: 1.4; }
+        .header-panel h1 { font-size: 16px; color: #111; margin: 0; font-weight: bold; }
+        .header-panel p { font-size: 12px; color: #555; margin-top: 4px; line-height: 1.4; }
 
         /* กล่องข้อมูล (Info Card) */
         .info-card {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(50px);
-            background: #ffffff; border-top: 4px solid #111;
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 20; width: 90%; max-width: 320px;
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(50px);
+            background: #ffffff; border-top: 4px solid #7e22ce;
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 20; width: 90%; max-width: 340px;
             opacity: 0; pointer-events: none; transition: all 0.3s ease;
         }
         .info-card.active { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
         .card-content { padding: 20px; }
-        .card-content h3 { font-size: 18px; color: #111; margin-bottom: 8px; font-weight: bold; }
-        .card-content p { font-size: 14px; color: #444; line-height: 1.5; margin-bottom: 15px; }
+        .card-content h3 { font-size: 17px; color: #111; margin-bottom: 8px; font-weight: bold; }
+        .card-content p { font-size: 13.5px; color: #444; line-height: 1.5; margin-bottom: 15px; }
         .close-btn {
             background: #f1f5f9; color: #111; border: 1px solid #ccc; width: 100%;
             padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
         }
         .close-btn:active { background: #e2e8f0; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -66,8 +74,8 @@
 
     <div class="ui-overlay">
         <div class="header-panel">
-            <h1>แผนผังแสดงอาคาร สถาบันบำราศนราดูร</h1>
-            <p>หมุนและซูมเพื่อดูรายละเอียดอาคาร เส้นทางรถ ประตูเข้า-ออก และลูกศรจราจร</p>
+            <h1>📍 แผนผัง สถาบันบำราศนราดูร (อัปเดตล่าสุด)</h1>
+            <p>กรุณาขับรถตาม <b>เส้นสีม่วงและลูกศร</b> <br>อาคาร 3 มิติสีขาวจำลองแบบสถาปัตยกรรมพร้อมกระจกหน้าต่าง</p>
         </div>
     </div>
 
@@ -99,47 +107,54 @@
         let mouse = new THREE.Vector2();
 
         // ----------------------------------------------------
-        // ข้อมูลอาคาร (อัปเดตความสูงและตำแหน่งตามคำสั่งล่าสุด)
+        // ข้อมูลอาคาร (อัปเดตตำแหน่งและชั้นตามสั่ง 100%)
         // ----------------------------------------------------
         const mapData = [
-            // อาคารเฉลิมพระเกียรติ พอดีกับตึก 2 และ 3 (ระยะ x:-12 ถึง 2) -> Center -5, Width 14
-            { name: "อาคารเฉลิมพระเกียรติ", desc: "อาคารหลักด้านหน้า", x: -5, z: 9, w: 14, h: 4, d: 5 },
+            // อาคารเฉลิมพระเกียรติ กว้างคลุมตึก 2 ถึง 3 (ตึก2เริ่ม -9, ตึก3จบ +2.5 -> กว้าง 12 ศูนย์กลาง -3.5)
+            { name: "อาคารเฉลิมพระเกียรติ", desc: "จุดรับ-ส่งผู้ป่วย", x: -3.5, z: 9, w: 12, h: 4, d: 5 },
             
-            { name: "ตึก 1", desc: "อาคารตึก 1 (2 ชั้น)", x: 8.5, z: 9, w: 5, h: 2, d: 5 }, // 2 ชั้น
-            { name: "ตึก 2", desc: "อาคารผู้ป่วย (4 ชั้น)", x: -9, z: 2.5, w: 6, h: 4, d: 5 },
-            { name: "ตึก 3", desc: "อาคารผู้ป่วย (5 ชั้น)", x: -1, z: 2.5, w: 6, h: 5, d: 5 }, // 5 ชั้น
-            { name: "ตึก 4", desc: "อาคารผู้ป่วย (4 ชั้น)", x: 7, z: 2.5, w: 6, h: 4, d: 5 },
+            { name: "ตึก 1", desc: "อาคาร 2 ชั้น", x: 6.5, z: 9, w: 4.5, h: 2, d: 5 },
+            { name: "ตึก 2", desc: "อาคาร 4 ชั้น", x: -7, z: 3, w: 5, h: 4, d: 5 },
+            { name: "ตึก 3", desc: "อาคาร 5 ชั้น", x: 0, z: 3, w: 5, h: 5, d: 5 },
+            { name: "ตึก 4", desc: "อาคาร 4 ชั้น", x: 7, z: 3, w: 5, h: 4, d: 5 },
             
-            { name: "ตึก 8", desc: "อาคารผู้ป่วย (4 ชั้น)", x: -9, z: -4, w: 6, h: 4, d: 5 },
-            { name: "ตึก 7", desc: "อาคารผู้ป่วย (6 ชั้น)", x: -1, z: -4, w: 6, h: 6, d: 5 }, // 6 ชั้น
-            { name: "ตึก 5", desc: "อาคารผู้ป่วย (5 ชั้น)", x: 7, z: -4, w: 6, h: 5, d: 5 }, // 5 ชั้น
+            // แถวบน (ตึก 7 มี 6 ชั้น, ตึก 5 มี 5 ชั้น)
+            { name: "ตึก 7", desc: "อาคาร 6 ชั้น", x: 0, z: -3, w: 5, h: 6, d: 5 },
+            { name: "ตึก 5", desc: "อาคาร 5 ชั้น", x: 7, z: -3, w: 5, h: 5, d: 5 },
             
-            { name: "อาคาร 10 ชั้น", desc: "อาคารสูง 10 ชั้น", x: -16, z: 2.5, w: 4, h: 10, d: 5 },
-            // วิทยาลัยพยาบาลถูกลบออกตามคำสั่ง
+            // โซนซ้ายที่สร้างใหม่
+            { name: "ห้องปฏิบัติการอ้างอิงโรคติดต่อแห่งชาติ", desc: "ห้องปฏิบัติการ", x: -14, z: -3, w: 6.5, h: 4, d: 5 },
+            { name: "พื้นที่ก่อสร้าง NCEID", desc: "ศูนย์การแพทย์เพื่อตอบโต้โรคอุบัติใหม่แห่งชาติ", x: -14, z: 4.5, w: 6.5, h: 0.2, d: 8, isConstruct: true },
+            { name: "หอประชุมอัจฉรา", desc: "หอประชุมและโรงอาหาร (วางพอดีกับห้องปฏิบัติการฯ)", x: -14, z: -9, w: 6.5, h: 3, d: 4.5 },
             
-            { name: "แฟลต", desc: "ที่พักบุคลากร", x: -16, z: -4, w: 4, h: 5, d: 4 },
-            { name: "หอประชุมอัจฉรา", desc: "หอประชุมและโรงอาหาร (พอดีกับตึก 8)", x: -9, z: -11, w: 6, h: 3, d: 5 }, // พอดีตึก 8 (กว้าง 6, x=-9)
+            // อาคารบริการและจิปาถะ
+            { name: "งานโภชนาการ", desc: "งานโภชนาการ", x: 3, z: -9, w: 2.5, h: 2, d: 3 },
+            { name: "คลังพัสดุ", desc: "คลังพัสดุ", x: 7, z: -9, w: 2.5, h: 2, d: 3 },
+            { name: "ยานพาหนะ", desc: "ศูนย์ยานพาหนะและสิ่งแวดล้อม", x: -14, z: -14, w: 6.5, h: 2, d: 4 },
+            { name: "อาคารชันสูตร", desc: "ศูนย์ชันสูตรโรค", x: -22, z: -8, w: 4.5, h: 3, d: 4 },
+            { name: "กำจัดขยะ", desc: "กำจัดขยะ", x: -18, z: -8, w: 2.5, h: 2, d: 4 },
+            { name: "บำบัดน้ำเสีย", desc: "บำบัดน้ำเสีย", x: -21, z: -14, w: 6, h: 2, d: 4 },
             
-            { name: "อาคารชันสูตร", desc: "ศูนย์ชันสูตรโรค", x: -22, z: -10, w: 5, h: 3, d: 4 },
-            { name: "กำจัดขยะ", desc: "ศูนย์กำจัดขยะติดเชื้อ", x: -16.5, z: -10, w: 4, h: 2, d: 4 },
-            { name: "บำบัดน้ำเสีย", desc: "ระบบบำบัดน้ำเสีย", x: -20, z: -16, w: 8, h: 2, d: 4, isBlue: true },
-            { name: "ยานพาหนะ", desc: "ศูนย์ยานพาหนะ", x: -12.5, z: -17, w: 6, h: 2, d: 3 },
+            // แฟลต 1, 2, 3, 4 (เรียงกัน ขอบเท่ากันเป๊ะ ระยะ x ห่างกัน 5)
+            { name: "แฟลต 1", desc: "ที่พักบุคลากร", x: -1, z: -14, w: 4.5, h: 5, d: 3.5 },
+            { name: "แฟลต 2", desc: "ที่พักบุคลากร", x: 4, z: -14, w: 4.5, h: 5, d: 3.5 },
+            { name: "แฟลต 3", desc: "ที่พักบุคลากร", x: 9, z: -14, w: 4.5, h: 5, d: 3.5 },
+            { name: "แฟลต 4", desc: "ที่พักบุคลากร", x: 14, z: -14, w: 4.5, h: 5, d: 3.5 },
             
-            // แฟลต 1-4 เรียงกัน ขอบเท่ากันพอดีเป๊ะ (กว้าง 6 ห่าง 0.5)
-            { name: "แฟลต 1", desc: "ที่พักบุคลากร 1", x: -4.5, z: -17, w: 6, h: 5, d: 3 },
-            { name: "แฟลต 2", desc: "ที่พักบุคลากร 2", x: 2.0, z: -17, w: 6, h: 5, d: 3 },
-            { name: "แฟลต 3", desc: "ที่พักบุคลากร 3", x: 8.5, z: -17, w: 6, h: 5, d: 3 },
-            { name: "แฟลต 4", desc: "ที่พักบุคลากร 4", x: 15.0, z: -17, w: 6, h: 5, d: 3 },
+            // แฟลต 5, 6
+            { name: "แฟลต 5", desc: "ที่พักบุคลากร", x: 9, z: -9.5, w: 4.5, h: 5, d: 3.5 },
+            { name: "แฟลต 6", desc: "ที่พักบุคลากร", x: 14, z: -9.5, w: 4.5, h: 5, d: 3.5 },
             
-            // แฟลต 5-6 อยู่ล่างแฟลต 3-4
-            { name: "แฟลต 5", desc: "ที่พักบุคลากร 5", x: 8.5, z: -11, w: 6, h: 5, d: 3 },
-            { name: "แฟลต 6", desc: "ที่พักบุคลากร 6", x: 15.0, z: -11, w: 6, h: 5, d: 3 },
+            // โซนขวา
+            { name: "แฟลต 7", desc: "ที่พักบุคลากร (ใหม่)", x: 20, z: -9.5, w: 4.5, h: 5, d: 3.5 },
+            { name: "ลานจอดรถข้างแฟลต 7", desc: "ลานจอดรถใหม่", x: 26, z: -10, w: 6, h: 0.1, d: 5, isParking: true },
+            { name: "อาคารกีฬา", desc: "ลานกีฬา (1 ชั้น)", x: 17, z: 0, w: 8, h: 1, d: 9 }, // 1 ชั้น
+            { name: "อาคารศูนย์เฝ้าระวังและกักกัน", desc: "ศูนย์เฝ้าระวังโรค", x: 15, z: 9, w: 6, h: 5, d: 4 }, // เปลี่ยนชื่อจากแฟลตแพทย์
             
-            { name: "อาคารกีฬา", desc: "ลานกีฬาและนันทนาการ (1 ชั้น)", x: 23, z: -1, w: 7, h: 1, d: 11 }, // 1 ชั้น
-            { name: "แฟลตแพทย์", desc: "ที่พักแพทย์", x: 18, z: 9, w: 5, h: 5, d: 3 }
+            { name: "ลานจอดรถฝั่งศรีธัญญา", desc: "ลานจอดรถด้านหลัง", x: -1, z: -18, w: 20, h: 0.1, d: 3, isParking: true }
         ];
 
-        // ฟังก์ชันตีเส้นดำให้อาคารมีมิติ
+        // ฟังก์ชันตีเส้นขอบดำให้อาคาร
         function addBlackEdges(mesh) {
             const edges = new THREE.EdgesGeometry(mesh.geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
@@ -151,10 +166,10 @@
             const css2dContainer = document.getElementById('css2d-container');
             
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf8fafc); // พื้นสีขาวสว่าง
+            scene.background = new THREE.Color(0xf0f4f8);
             
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 45, 50);
+            camera.position.set(0, 48, 52); // มุมมองกว้างขึ้น
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -172,21 +187,28 @@
             controls.maxPolarAngle = Math.PI / 2 - 0.1; 
             controls.target.set(0, 0, 0);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
             scene.add(ambientLight);
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
             dirLight.position.set(20, 40, 20);
             dirLight.castShadow = true;
             dirLight.shadow.mapSize.width = 2048;
             dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
 
-            createGroundAndRoads();
+            createGroundAndPurpleRoads();
             createTrafficArrows();
             createEnvironment();
             
-            // วาดตึก
-            mapData.forEach(data => createWhiteBuilding(data));
+            // วาดตึกทั้งหมด
+            mapData.forEach(data => {
+                if (data.isParking) createParkingLot(data);
+                else if (data.isConstruct) createConstructArea(data);
+                else createWhiteBuilding(data);
+            });
+
+            // ป้าย 7-Eleven
+            createLabelObject("7-Eleven", new THREE.Vector3(4, 3, 11), 'seven-label');
 
             window.addEventListener('resize', onWindowResize);
             renderer.domElement.addEventListener('pointerdown', onDocumentClick);
@@ -194,25 +216,27 @@
             animate();
         }
 
-        function createGroundAndRoads() {
-            // พื้นหลัก
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(65, 45), new THREE.MeshStandardMaterial({ color: 0xeae6df }));
+        function createGroundAndPurpleRoads() {
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(62, 45), new THREE.MeshStandardMaterial({ color: 0xeae6df }));
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // ถนน
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
+            // วาดถนนสีม่วง (Purple Roads) ตามแผนที่ใหม่
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x6b21a8 }); // สีม่วงเข้ม
+            
             const roads = [
-                { w: 65, d: 4, x: 0, z: 16 }, // ถ.ติวานนท์
-                { w: 35, d: 2, x: 2, z: 12.5 }, // หน้าตึกเฉลิมพระเกียรติ
-                { w: 2, d: 20, x: -13, z: 3.5 },
-                { w: 28, d: 2, x: 0, z: -7.5 },
-                { w: 2, d: 28, x: 13, z: 0 },
-                { w: 45, d: 2, x: -9.5, z: -14 },
-                { w: 10, d: 2, x: 15, z: -7.5 },
-                { w: 10, d: 2, x: 22.5, z: 4.5 } 
+                { w: 62, d: 3.5, x: 0, z: 14.5 }, // ถ.ติวานนท์ ด้านล่างสุด
+                { w: 32, d: 2, x: 5, z: 12.5 }, // หน้าตึกเฉลิมพระเกียรติ - ศูนย์เฝ้าระวัง
+                { w: 2, d: 20, x: -10.5, z: 3.5 }, // แนวตั้งซ้าย (แยกจากเฉลิมพระเกียรติ)
+                { w: 28, d: 2, x: -3.5, z: -6.5 }, // แนวนอนตัดกลาง (หน้าหอประชุม)
+                { w: 2, d: 20, x: 11, z: 3.5 }, // แนวตั้งขวา (ข้างตึก 4,5)
+                { w: 42, d: 2, x: -6.5, z: -11.5 }, // แนวนอนบน (หน้าแฟลต 1-4)
+                { w: 10, d: 2, x: 15, z: -6.5 }, // เข้าแฟลต 7
+                { w: 2, d: 15, x: 20, z: 0 }, // โค้งขวาสุด
+                { w: 18, d: 2, x: -9, z: 9.5 } // ซอยเข้า NCEID
             ];
+            
             roads.forEach(r => {
                 const road = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.d), roadMat);
                 road.rotation.x = -Math.PI / 2;
@@ -221,20 +245,14 @@
                 scene.add(road);
             });
 
-            // คลองระบายน้ำสีฟ้า
-            const canal = new THREE.Mesh(new THREE.PlaneGeometry(50, 1.5), new THREE.MeshStandardMaterial({ color: 0x0ea5e9 }));
-            canal.rotation.x = -Math.PI / 2;
-            canal.position.set(5, 0.03, -13.5);
-            scene.add(canal);
-
-            // ป้ายประตู
-            createGateLabel("ประตู 2", -13, 16);
-            createGateLabel("ประตู 1", 3, 16);
-            createGateLabel("ทางออก ถ.ติวานนท์", 24, 16);
+            // ป้ายประตูทางเข้า
+            createLabelObject("ประตู 2 (ทางออก)", new THREE.Vector3(-10, 1, 16), 'building-label');
+            createLabelObject("ประตู 1 (ทางเข้า)", new THREE.Vector3(5, 1, 16), 'building-label');
         }
 
         function createTrafficArrows() {
-            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            // ลูกศรเดินรถสีเหลือง
+            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
             function addArrow(x, z, rot) {
                 const shape = new THREE.Shape();
                 shape.moveTo(0, 0.8);
@@ -246,90 +264,115 @@
                 arrow.rotation.x = -Math.PI / 2;
                 arrow.rotation.z = rot;
                 arrow.position.set(x, 0.05, z);
-                arrow.scale.set(0.7, 0.7, 0.7);
+                arrow.scale.set(0.6, 0.6, 0.6);
                 scene.add(arrow);
             }
-            addArrow(-13, 14, 0);
-            addArrow(-13, 7, 0); 
-            addArrow(3, 14, 0); 
-            addArrow(0, 12.5, Math.PI/2);
-            addArrow(13, 4, Math.PI);
-            addArrow(13, -2, Math.PI);
-            addArrow(24, 14.5, -Math.PI/2);
+
+            // แปะลูกศรตามถนนสีม่วง
+            addArrow(5, 14, 0); // เข้าประตู 1
+            addArrow(8, 12.5, -Math.PI/2); // เลี้ยวขวา
+            addArrow(11, 8, 0); // ตรงขึ้นไป
+            addArrow(11, 0, 0);
+            addArrow(11, -8, 0);
+            addArrow(8, -11.5, Math.PI/2); // เลี้ยวซ้าย
+            addArrow(0, -11.5, Math.PI/2);
+            addArrow(-10.5, -9, Math.PI); // เลี้ยวลงใต้ (ลงมาทาง NCEID)
+            addArrow(-10.5, 0, Math.PI);
+            addArrow(-10.5, 6, Math.PI);
+            addArrow(-10.5, 12.5, Math.PI); // ออกประตู 2
         }
 
-        // สร้างอาคารสีขาวขอบดำ มีชั้น
+        // อาคารสีขาวขอบดำ มีชั้น สมจริง
         function createWhiteBuilding(data) {
             const group = new THREE.Group();
-            
             const floorHeight = 1.0;
             const floorCount = Math.max(1, Math.floor(data.h / floorHeight));
-            const bColor = data.isBlue ? 0x38bdf8 : 0xffffff;
-            
-            const baseMat = new THREE.MeshStandardMaterial({ color: bColor, roughness: 0.9 });
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
             const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.8 }); 
 
             for (let i = 0; i < floorCount; i++) {
                 const yPos = (i * floorHeight);
-                // พื้น
                 const slab = new THREE.Mesh(new THREE.BoxGeometry(data.w, 0.1, data.d), baseMat);
-                slab.position.y = yPos;
-                addBlackEdges(slab); 
-                group.add(slab);
+                slab.position.y = yPos; addBlackEdges(slab); group.add(slab);
 
-                // กำแพง
                 const wall = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.95, floorHeight - 0.1, data.d * 0.95), baseMat);
-                wall.position.y = yPos + (floorHeight/2);
-                addBlackEdges(wall); 
-                group.add(wall);
+                wall.position.y = yPos + (floorHeight/2); addBlackEdges(wall); group.add(wall);
 
                 // กระจกหน้าต่าง
-                if (!data.isBlue) {
-                    const winZ = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.8, floorHeight * 0.6, data.d * 0.97), glassMat);
-                    winZ.position.y = yPos + (floorHeight/2);
-                    group.add(winZ);
+                const winZ = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.8, floorHeight * 0.6, data.d * 0.97), glassMat);
+                winZ.position.y = yPos + (floorHeight/2); group.add(winZ);
 
-                    const winX = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.97, floorHeight * 0.6, data.d * 0.8), glassMat);
-                    winX.position.y = yPos + (floorHeight/2);
-                    group.add(winX);
-                }
+                const winX = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.97, floorHeight * 0.6, data.d * 0.8), glassMat);
+                winX.position.y = yPos + (floorHeight/2); group.add(winX);
             }
 
-            // หลังคา
             const roof = new THREE.Mesh(new THREE.BoxGeometry(data.w, 0.1, data.d), baseMat);
-            roof.position.y = floorCount * floorHeight;
-            addBlackEdges(roof); 
-            group.add(roof);
+            roof.position.y = floorCount * floorHeight; addBlackEdges(roof); group.add(roof);
 
             const hitbox = new THREE.Mesh(new THREE.BoxGeometry(data.w + 0.2, data.h, data.d + 0.2), new THREE.MeshBasicMaterial({ visible: false }));
-            hitbox.position.y = data.h / 2;
-            hitbox.userData = data;
-            group.add(hitbox);
+            hitbox.position.y = data.h / 2; hitbox.userData = data; group.add(hitbox);
             interactableObjects.push(hitbox);
 
             group.position.set(data.x, 0, data.z);
             scene.add(group);
 
-            createLabelObject(data.name, group.position, data.h + 1.2);
+            createLabelObject(data.name, group.position, data.h + 1.2, 'building-label');
+        }
+
+        // สร้างพื้นที่ลานจอดรถ
+        function createParkingLot(data) {
+            const group = new THREE.Group();
+            const parkMesh = new THREE.Mesh(new THREE.BoxGeometry(data.w, data.h, data.d), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
+            parkMesh.position.y = data.h / 2; addBlackEdges(parkMesh); group.add(parkMesh);
+
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for(let i=0; i<Math.floor(data.w/1.5); i++) {
+                const line = new THREE.Mesh(new THREE.PlaneGeometry(0.15, data.d - 1), lineMat);
+                line.rotation.x = -Math.PI / 2;
+                line.position.set(-data.w/2 + 1 + (i*1.5), data.h + 0.01, 0);
+                group.add(line);
+            }
+            
+            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(data.w, 1.5, data.d), new THREE.MeshBasicMaterial({ visible: false }));
+            hitbox.position.y = 0.75; hitbox.userData = data; group.add(hitbox);
+            interactableObjects.push(hitbox);
+
+            group.position.set(data.x, 0, data.z);
+            scene.add(group);
+            createLabelObject(data.name, group.position, 1.5, 'building-label parking-label');
+        }
+
+        // สร้างพื้นที่ก่อสร้าง NCEID
+        function createConstructArea(data) {
+            const group = new THREE.Group();
+            const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(data.w, data.h, data.d), new THREE.MeshStandardMaterial({ color: 0xe0f2fe }));
+            baseMesh.position.y = data.h / 2; addBlackEdges(baseMesh); group.add(baseMesh);
+
+            const hitbox = new THREE.Mesh(new THREE.BoxGeometry(data.w, 2, data.d), new THREE.MeshBasicMaterial({ visible: false }));
+            hitbox.position.y = 1; hitbox.userData = data; group.add(hitbox);
+            interactableObjects.push(hitbox);
+
+            group.position.set(data.x, 0, data.z);
+            scene.add(group);
+            createLabelObject(data.name, group.position, 1.5, 'building-label construct-label');
         }
 
         function createEnvironment() {
-            // สนามเทนนิส
+            // สนามเทนนิส (ข้างอาคารศูนย์เฝ้าระวัง)
             const tennisCourt = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 4), new THREE.MeshStandardMaterial({ color: 0x22c55e }));
-            tennisCourt.position.set(15.5, 0.05, 9);
+            tennisCourt.position.set(10.5, 0.05, 9);
             const courtBorder = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.08, 4.2), new THREE.MeshStandardMaterial({ color: 0xdc2626 }));
-            courtBorder.position.set(15.5, 0.04, 9);
+            courtBorder.position.set(10.5, 0.04, 9);
             scene.add(tennisCourt); scene.add(courtBorder);
 
-            // ต้นไม้จำลอง
+            // ต้นไม้จำลอง (อิงตามรูป)
             const treeMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
             const tGeo = new THREE.DodecahedronGeometry(0.8, 1);
             
             const treePositionsArray = [
-                [-13, 7], [-13, 9], [-5, 12], [1, 12], [3, 12], [6, 12],
-                [-8, 6], [-6, 6], [-1, 6], [1, 6], [7, 6],
-                [-18, -8], [-20, -8], [11, 4], [13, 4], [18, 12], [23, 10], [27, 4], [25, 0], [24, -4],
-                [-11, 14], [-4, 14], [9, 14], [1, 5], [-5, 5], [13, 6], [19, 13], [24, 7], [22, -2], [-19, -8], [-12, -12]
+                [-14, -6], [-10, -6], [3, -6], [9, -6], // ข้างตึก
+                [15, 3], [19, 3], [14, -3], // รอบอาคารกีฬา
+                [10, 12], [10, 6], [20, 11] // รอบศูนย์เฝ้าระวัง
             ];
             
             treePositionsArray.forEach(pos => {
@@ -340,21 +383,12 @@
             });
         }
 
-        function createLabelObject(text, position, heightOffset) {
+        function createLabelObject(text, position, heightOffset, className) {
             const div = document.createElement('div');
-            div.className = 'building-label';
+            div.className = className;
             div.innerText = text;
             const labelObj = new CSS2DObject(div);
             labelObj.position.set(position.x, heightOffset, position.z);
-            scene.add(labelObj);
-        }
-
-        function createGateLabel(text, x, z) {
-            const div = document.createElement('div');
-            div.className = 'gate-label';
-            div.innerText = text;
-            const labelObj = new CSS2DObject(div);
-            labelObj.position.set(x, 1, z);
             scene.add(labelObj);
         }
 
