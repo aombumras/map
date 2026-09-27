@@ -22,7 +22,7 @@
         }
         .building-label:active { transform: scale(0.9); }
 
-        /* ป้ายทางเข้า-ออก (สีแดง/เหลือง) */
+        /* ป้ายทางเข้า-ออก (สีแดง) */
         .gate-label {
             background: #ef4444; color: white; padding: 4px 12px;
             border: 2px solid #b91c1c; border-radius: 12px; font-size: 13px;
@@ -98,10 +98,10 @@
         let raycaster = new THREE.Raycaster();
         let mouse = new THREE.Vector2();
 
-        // ข้อมูลอาคาร (อ้างอิงตำแหน่ง กว้างยาว จากแปลนจริง)
+        // ข้อมูลอาคาร (อ้างอิงตำแหน่ง กว้างยาว จากแปลน)
         const mapData = [
             { name: "อาคารเฉลิมพระเกียรติ", desc: "อาคารหลักด้านหน้า", x: -2, z: 9, w: 14, h: 4, d: 5 },
-            { name: "ตึก 1", desc: "อาคารตึก 1", x: 8.5, z: 9, w: 5, h: 3, d: 5 },
+            { name: "ตึก 1", desc: "อาคารผู้ป่วย / ปฏิบัติการ", x: 8.5, z: 9, w: 5, h: 3, d: 5 },
             { name: "ตึก 2", desc: "อาคารผู้ป่วย / ปฏิบัติการ", x: -9, z: 2.5, w: 6, h: 4, d: 5 },
             { name: "ตึก 3", desc: "อาคารผู้ป่วย / ปฏิบัติการ", x: -1, z: 2.5, w: 6, h: 4, d: 5 },
             { name: "ตึก 4", desc: "อาคารผู้ป่วย / ปฏิบัติการ", x: 7, z: 2.5, w: 6, h: 4, d: 5 },
@@ -123,6 +123,7 @@
             { name: "แฟลตแพทย์", desc: "ที่พักแพทย์", x: 17, z: 9, w: 5, h: 5, d: 3 }
         ];
 
+        // ฟังก์ชันช่วยตีเส้นดำ
         function addBlackEdges(mesh) {
             const edges = new THREE.EdgesGeometry(mesh.geometry);
             const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
@@ -134,7 +135,7 @@
             const css2dContainer = document.getElementById('css2d-container');
             
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xf8fafc); // พื้นหลังสว่าง
+            scene.background = new THREE.Color(0xf8fafc); // พื้นสีขาวสว่าง
             
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 45, 50);
@@ -155,7 +156,6 @@
             controls.maxPolarAngle = Math.PI / 2 - 0.1; 
             controls.target.set(0, 0, 0);
 
-            // จัดแสงให้เห็นโมเดลขาวขอบดำชัดเจน
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
@@ -169,7 +169,7 @@
             createTrafficArrows();
             createEnvironment();
             
-            // สร้างอาคารทั้งหมด (สีขาวล้วน ขอบดำ สมจริง)
+            // วาดตึก
             mapData.forEach(data => createWhiteBuilding(data));
 
             window.addEventListener('resize', onWindowResize);
@@ -179,26 +179,24 @@
         }
 
         function createGroundAndRoads() {
-            // พื้นหลัก (สีเบจ/ครีมอ่อนตามรูป)
+            // พื้นหลักเบจ
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 45), new THREE.MeshStandardMaterial({ color: 0xeae6df }));
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // ถนน (สีน้ำตาล/เทาตามรูป)
+            // ถนน
             const roadMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
-            
             const roads = [
-                { w: 60, d: 4, x: 0, z: 16 }, // ถ.ติวานนท์ (ล่างสุด)
-                { w: 32, d: 2, x: 1, z: 12.5 }, // ถนนหน้าตึกเฉลิมพระเกียรติ
-                { w: 2, d: 20, x: -13, z: 3.5 }, // ถนนแนวตั้งซ้ายสุด
-                { w: 25, d: 2, x: -1.5, z: -7.5 }, // ถนนแนวนอนตัดกลาง
-                { w: 2, d: 28, x: 11, z: 0 }, // ถนนแนวตั้งขวา
-                { w: 45, d: 2, x: -9.5, z: -13.5 }, // ถนนแนวนอนบนสุด (หน้าแฟลต)
-                { w: 10, d: 2, x: 15, z: -7.5 }, // ทางเข้าอาคารกีฬา
-                { w: 15, d: 2, x: 20.5, z: 4.5 } // ถนนโค้งขวาสุด
+                { w: 60, d: 4, x: 0, z: 16 }, // ถ.ติวานนท์
+                { w: 32, d: 2, x: 1, z: 12.5 }, 
+                { w: 2, d: 20, x: -13, z: 3.5 },
+                { w: 25, d: 2, x: -1.5, z: -7.5 },
+                { w: 2, d: 28, x: 11, z: 0 },
+                { w: 45, d: 2, x: -9.5, z: -13.5 },
+                { w: 10, d: 2, x: 15, z: -7.5 },
+                { w: 15, d: 2, x: 20.5, z: 4.5 } 
             ];
-
             roads.forEach(r => {
                 const road = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.d), roadMat);
                 road.rotation.x = -Math.PI / 2;
@@ -207,24 +205,20 @@
                 scene.add(road);
             });
 
-            // คลองน้ำ (สีฟ้า แนวนอน)
+            // คลองระบายน้ำสีฟ้า
             const canal = new THREE.Mesh(new THREE.PlaneGeometry(45, 1.5), new THREE.MeshStandardMaterial({ color: 0x0ea5e9 }));
             canal.rotation.x = -Math.PI / 2;
             canal.position.set(4, 0.03, -8.5);
             scene.add(canal);
 
-            // ป้ายทางเข้า-ออก
+            // ป้ายประตู
             createGateLabel("ประตู 2", -13, 16);
             createGateLabel("ประตู 1", 3, 16);
             createGateLabel("ทางออก ถ.ติวานนท์", 22, 16);
         }
 
-        // ==========================================
-        // สร้างลูกศรจราจรบนถนน
-        // ==========================================
         function createTrafficArrows() {
             const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            
             function addArrow(x, z, rot) {
                 const shape = new THREE.Shape();
                 shape.moveTo(0, 0.8);
@@ -234,52 +228,47 @@
                 
                 const arrow = new THREE.Mesh(new THREE.ShapeGeometry(shape), arrowMat);
                 arrow.rotation.x = -Math.PI / 2;
-                arrow.rotation.z = rot; // หมุนตามทิศทาง
+                arrow.rotation.z = rot;
                 arrow.position.set(x, 0.05, z);
                 arrow.scale.set(0.7, 0.7, 0.7);
                 scene.add(arrow);
             }
-
-            // แปะลูกศรตามถนน
-            addArrow(-13, 14, 0); // เข้าประตู 2
-            addArrow(-13, 7, 0);  // ตรงไปตามถนนซ้าย
-            addArrow(3, 14, 0);   // เข้าประตู 1
-            addArrow(0, 12.5, Math.PI/2); // เลี้ยวซ้ายหน้าตึก
-            addArrow(11, 4, Math.PI); // ขับลงถนนขวา
-            addArrow(11, -2, Math.PI); 
-            addArrow(22, 14.5, -Math.PI/2); // เลี้ยวออกถนนใหญ่
+            // ลูกศรบนพื้นถนน
+            addArrow(-13, 14, 0);
+            addArrow(-13, 7, 0); 
+            addArrow(3, 14, 0); 
+            addArrow(0, 12.5, Math.PI/2);
+            addArrow(11, 4, Math.PI);
+            addArrow(11, -2, Math.PI);
+            addArrow(22, 14.5, -Math.PI/2);
         }
 
-        // ==========================================
-        // ฟังก์ชันสร้างตึกสีขาวล้วน ขอบดำ สมจริง (มีกระจกหน้าต่าง)
-        // ==========================================
+        // สร้างอาคารสีขาวพร้อมกระจกหน้าต่าง
         function createWhiteBuilding(data) {
             const group = new THREE.Group();
             
             const floorHeight = 1.0;
             const floorCount = Math.max(1, Math.floor(data.h / floorHeight));
-
-            // สีหลักคือ ขาวล้วน (เว้นแต่บ่อบำบัดน้ำเสียที่เป็นสีฟ้าตามรูป)
             const bColor = data.isBlue ? 0x38bdf8 : 0xffffff;
+            
             const baseMat = new THREE.MeshStandardMaterial({ color: bColor, roughness: 0.9 });
-            const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.8 }); // กระจกสีดำเงา
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.8 }); // กระจกสีดำ
 
             for (let i = 0; i < floorCount; i++) {
                 const yPos = (i * floorHeight);
-
-                // พื้น/เพดาน (Slab) สีขาวขอบดำ
+                // พื้นชั้น
                 const slab = new THREE.Mesh(new THREE.BoxGeometry(data.w, 0.1, data.d), baseMat);
                 slab.position.y = yPos;
                 addBlackEdges(slab); 
                 group.add(slab);
 
-                // ตัวกำแพง
+                // กำแพงชั้น
                 const wall = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.95, floorHeight - 0.1, data.d * 0.95), baseMat);
                 wall.position.y = yPos + (floorHeight/2);
                 addBlackEdges(wall); 
                 group.add(wall);
 
-                // แปะหน้าต่างกระจกดำ (ถ้าไม่ใช่บ่อบำบัด)
+                // หน้าต่างรอบๆ
                 if (!data.isBlue) {
                     const winZ = new THREE.Mesh(new THREE.BoxGeometry(data.w * 0.8, floorHeight * 0.6, data.d * 0.97), glassMat);
                     winZ.position.y = yPos + (floorHeight/2);
@@ -297,7 +286,6 @@
             addBlackEdges(roof); 
             group.add(roof);
 
-            // กล่องรับการคลิก
             const hitbox = new THREE.Mesh(new THREE.BoxGeometry(data.w + 0.2, data.h, data.d + 0.2), new THREE.MeshBasicMaterial({ visible: false }));
             hitbox.position.y = data.h / 2;
             hitbox.userData = data;
@@ -311,24 +299,26 @@
         }
 
         function createEnvironment() {
-            // สนามเทนนิส (สีเขียว-แดง ตามรูป)
+            // สนามเทนนิส
             const tennisCourt = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 4), new THREE.MeshStandardMaterial({ color: 0x22c55e }));
             tennisCourt.position.set(13, 0.05, 9);
             const courtBorder = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.08, 4.2), new THREE.MeshStandardMaterial({ color: 0xdc2626 }));
             courtBorder.position.set(13, 0.04, 9);
             scene.add(tennisCourt); scene.add(courtBorder);
 
-            // ต้นไม้จำลอง (จุดวงกลมสีเขียวเข้มในรูป)
+            // ต้นไม้จำลอง
             const treeMat = new THREE.MeshStandardMaterial({ color: 0x15803d });
-            const treePositions = [
-                {-13, 7}, {-13, 9}, {-5, 12}, {1, 12}, {3, 12}, {6, 12},
-                {-8, 6}, {-6, 6}, {-1, 6}, {1, 6}, {7, 6},
-                {-18, -8}, {-20, -8}, {11, 4}, {13, 4}, {18, 12}, {22, 10}, {25, 4}, {23, 0}, {22, -4}
+            const tGeo = new THREE.DodecahedronGeometry(0.8, 1);
+            
+            // พิกัดต้นไม้ในรูปแบบ Array
+            const treePositionsArray = [
+                [-13, 7], [-13, 9], [-5, 12], [1, 12], [3, 12], [6, 12],
+                [-8, 6], [-6, 6], [-1, 6], [1, 6], [7, 6],
+                [-18, -8], [-20, -8], [11, 4], [13, 4], [18, 12], [22, 10], [25, 4], [23, 0], [22, -4],
+                [-11, 14], [-4, 14], [9, 14], [1, 5], [-5, 5], [13, 6], [19, 13], [24, 7], [22, -2], [-19, -8], [-12, -12]
             ];
             
-            // วาดต้นไม้ทีละต้น
-            const tGeo = new THREE.DodecahedronGeometry(0.8, 1);
-            [[-11, 14], [-4, 14], [9, 14], [1, 5], [-5, 5], [13, 6], [19, 13], [24, 7], [22, -2], [-19, -8], [-12, -12]].forEach(pos => {
+            treePositionsArray.forEach(pos => {
                 const t = new THREE.Mesh(tGeo, treeMat);
                 t.position.set(pos[0], 0.8, pos[1]);
                 t.castShadow = true;
